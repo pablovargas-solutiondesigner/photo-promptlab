@@ -7,6 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="icon" type="image/png" href="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAeAB4DASIAAhEBAxEB/8QAGgAAAgIDAAAAAAAAAAAAAAAABQYBAgMECP/EAC0QAAEEAQMDAgMJAAAAAAAAAAECAwQRBQAGEiExQRQiBxNhFTNRcYGRobHR/8QAGAEAAgMAAAAAAAAAAAAAAAAAAAECAwX/xAAiEQACAgEDBAMAAAAAAAAAAAABAwIRAAQhMUFhocFRkeH/2gAMAwEAAhEDEQA/AOScRjn50wQYXBTiwpduOJbTxQlSiSVGgAkE9TrLk8Y/j0oU9IgO8yQBGmNPkV+PBRr9dRhp32dNVJ+V82477PHlX3jS277eOd15qunfTF8Mtiz965NxppwRoLAJkySQS2SDxATdmz+wvWxalq359bfuLU6lOlSWtNAYIxm3Z+RSx6R7GrW+QG2lZBhLhJNAcCsKu/FaDFpt5fJx1SOncJ5X/Oj7sPIbL3mw3lYg9VjpLbq2kughYSQrooX3H99vGgIFADQyKmLFc9fFe8sjNbYCcDYOFdqwkZDMekWwqQVxpJQ2m7K0sOKRVdSeQSa8/XWzjHtzbNyjGWZjzcZJpaG3HmFICgRSh7hR73X5HQBgqebcdNe0i/F3f+atojNbFVW/z9bVXvrhOMGrMJiwcYtrYDJ5PN46RKxM+TAkSkF54tL4LQV+4lY8d7N6XEm0g/TU6rIdeiSChBSFACzQIogHyNJzlwWABx547dvOSJAAAGf/2Q==">
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window,document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '2435950809822446');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=2435950809822446&ev=PageView&noscript=1"/></noscript>
+<!-- End Meta Pixel Code -->
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;500&family=Source+Code+Pro:wght@400;500&display=swap">
 <style>
@@ -4139,6 +4156,10 @@ function copyPrompt(lang) {
       btn.classList.remove('copied');
       label.textContent = currentLang === 'es' ? 'Copiar Prompt' : 'Copy Prompt';
     }, 2000);
+    // Meta Pixel: track prompt copy as Lead event
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', { content_name: 'prompt_copied', content_category: state.mode || 'unknown' });
+    }
   });
 }
 
