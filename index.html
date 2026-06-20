@@ -1912,6 +1912,108 @@
   .ref-section { display: block; }
   .ref-section.hidden-by-mode { display: none !important; }
 
+  /* ─── BUY ME A COFFEE ───────────────────────────────────────────── */
+
+  /* Button in output panel footer */
+  .btn-bmc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255,107,170,0.28);
+    background: rgba(255,107,170,0.06);
+    color: var(--pink);
+    font-size: 13px;
+    font-family: var(--font);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 180ms ease, border-color 180ms ease;
+    min-height: 40px;
+    touch-action: manipulation;
+  }
+
+  .btn-bmc:hover {
+    background: rgba(255,107,170,0.13);
+    border-color: rgba(255,107,170,0.5);
+  }
+
+  .btn-bmc i {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* BMC block in mode screen — wrap + tagline + button */
+  .ms-bmc-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .ms-bmc-tagline {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    letter-spacing: 0.1px;
+  }
+
+  .ms-bmc-tagline strong {
+    color: var(--text-sec);
+    font-weight: 500;
+  }
+
+  /* Button in mode screen — prominent gradient version */
+  .ms-bmc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 28px;
+    border-radius: 9999px;
+    border: none;
+    background: linear-gradient(135deg, #ff6baa 0%, #c94fbf 60%, #8B5CF6 100%);
+    color: #fff;
+    font-size: 14.5px;
+    font-family: var(--font);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    min-height: 48px;
+    touch-action: manipulation;
+    white-space: nowrap;
+    box-shadow: 0 4px 24px rgba(255,107,170,0.35), 0 0 0 1px rgba(255,107,170,0.2);
+    letter-spacing: 0.1px;
+  }
+
+  .ms-bmc-btn:hover {
+    opacity: 0.92;
+    box-shadow: 0 6px 32px rgba(255,107,170,0.5), 0 0 0 1px rgba(255,107,170,0.3);
+    transform: translateY(-1px);
+  }
+
+  .ms-bmc-btn:active {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .ms-bmc-btn i {
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .ms-footer-note-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
   /* ─── RESPONSIVE FIXES ───────────────────────────────────────────── */
 
   /* touch-action: prevent 300ms tap delay on mobile */
@@ -2109,6 +2211,13 @@
 
   <!-- Main content -->
   <div class="ms-content">
+    <div class="ms-bmc-block">
+      <p class="ms-bmc-tagline" id="bmc-tagline">¿Te fueron útiles los resultados? <strong>¡Apóyame con un café!</strong></p>
+      <a href="https://buymeacoffee.com/pablovargassd" target="_blank" rel="noopener noreferrer" class="ms-bmc-btn">
+        <i class="ph-bold ph-coffee"></i>
+        <span id="bmc-mode-label">Invítame un café ☕</span>
+      </a>
+    </div>
     <div class="mode-eyebrow" id="ms-eyebrow">Antes de comenzar</div>
     <h1 class="mode-title" id="ms-title">¿Qué tipo de foto vas a crear?</h1>
     <p class="mode-subtitle" id="ms-subtitle">Tu elección define cada paso que sigue: los parámetros, opciones y lenguaje se adaptan a tu contexto.</p>
@@ -2137,7 +2246,9 @@
   <!-- Thank-you / Lite notice -->
   <div class="ms-footer-note">
     <i class="ph-bold ph-heart" style="color:var(--pink);flex-shrink:0;font-size:15px;margin-top:1px;"></i>
-    <p id="ms-footer-note-text">Estás usando la versión <strong>Lite</strong> de PhotoPromptLab, completamente funcional y gratis. Si te resulta útil, considera apoyar la herramienta comprando la versión <strong>Pro</strong>, que incluye más cámaras, lentes, presets avanzados y IA para mejorar tus prompts. Tu apoyo ayuda a seguir desarrollando esto.</p>
+    <div class="ms-footer-note-body">
+      <p id="ms-footer-note-text">Estás usando la versión <strong>Lite</strong> de PhotoPromptLab, completamente funcional y gratis. Si te resulta útil, considera apoyar la herramienta comprando la versión <strong>Pro</strong>, que incluye más cámaras, lentes, presets avanzados y IA para mejorar tus prompts. Tu apoyo ayuda a seguir desarrollando esto.</p>
+    </div>
   </div>
 
 </div>
@@ -2549,6 +2660,10 @@
     </div>
 
     <div class="output-footer">
+      <a href="https://buymeacoffee.com/pablovargassd" target="_blank" rel="noopener noreferrer" class="btn-bmc">
+        <i class="ph-bold ph-coffee"></i>
+        <span id="bmc-output-label">Invítame un café</span>
+      </a>
       <button class="btn-copy" id="btn-copy-main" onclick="copyPrompt(currentOutputLang)">
         <span id="copy-main-label">Copy Prompt</span>
       </button>
@@ -3283,6 +3398,15 @@ function applyModeScreenI18n() {
   if (noteEl) noteEl.innerHTML = isES
     ? 'Estás usando la versión <strong>Lite</strong> de PhotoPromptLab. La versión <strong>Pro</strong> está en desarrollo, con más cámaras, lentes, presets avanzados e IA para mejorar tus prompts. Tu compra de esta versión es lo que hace posible que se construya.'
     : 'You\'re using the <strong>Lite</strong> version of PhotoPromptLab. The <strong>Pro</strong> version is in development, with more cameras, lenses, advanced presets, and AI prompt enhancement. Your purchase of this version is what makes it possible to build it.';
+
+  const bmcModeLabel = document.getElementById('bmc-mode-label');
+  if (bmcModeLabel) bmcModeLabel.textContent = isES ? 'Invítame un café ☕' : 'Buy me a coffee ☕';
+  const bmcTagline = document.getElementById('bmc-tagline');
+  if (bmcTagline) bmcTagline.innerHTML = isES
+    ? '¿Te fueron útiles los resultados? <strong>¡Apóyame con un café!</strong>'
+    : 'Did you find it useful? <strong>Support me with a coffee!</strong>';
+  const bmcOutputLabel = document.getElementById('bmc-output-label');
+  if (bmcOutputLabel) bmcOutputLabel.textContent = isES ? 'Invítame un café' : 'Buy me a coffee';
 
   const general = isES ? { name: 'General / Escena', desc: 'Paisajes, entornos, conceptos abstractos, o cualquier foto donde la escena es el sujeto. Sin persona, sin producto.', ex: 'Bosque al amanecer · Carretera en el desierto · Estudio de luz abstracto · Arquitectura vacía' }
                        : { name: 'General / Scene', desc: 'Landscapes, environments, abstract concepts, or any photo where the scene itself is the subject. No person, no product.', ex: 'Forest at dawn · Desert road · Abstract light study · Empty architecture' };
