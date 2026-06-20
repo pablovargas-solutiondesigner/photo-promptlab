@@ -1912,6 +1912,169 @@
   .ref-section { display: block; }
   .ref-section.hidden-by-mode { display: none !important; }
 
+  /* ─── RESPONSIVE FIXES ───────────────────────────────────────────── */
+
+  /* touch-action: prevent 300ms tap delay on mobile */
+  button, .option-card, .tag-pill, .nav-item, .ref-path-card,
+  .fidelity-btn, .exposure-btn, .mobile-step-btn, .mode-card,
+  .output-header, .lang-btn, .output-lang-btn {
+    touch-action: manipulation;
+  }
+
+  /* ─── SAFE AREA INSETS (iOS notch / home bar) ─────────────────── */
+  @supports (padding: env(safe-area-inset-top)) {
+    .header {
+      padding-left:  max(24px, env(safe-area-inset-left));
+      padding-right: max(24px, env(safe-area-inset-right));
+    }
+    .output-footer {
+      padding-bottom: max(16px, calc(12px + env(safe-area-inset-bottom)));
+    }
+    .ms-topbar {
+      padding-left:  max(28px, env(safe-area-inset-left));
+      padding-right: max(28px, env(safe-area-inset-right));
+    }
+  }
+
+  /* ─── TABLET (641 px – 900 px) ────────────────────────────────── */
+  @media (min-width: 641px) and (max-width: 900px) {
+
+    /* Mode screen: switch to top-anchored scroll so topbar never overlaps */
+    .mode-screen {
+      justify-content: flex-start;
+      padding-top: 0;
+    }
+    .ms-content {
+      padding-top: 88px; /* clear 57px topbar + breathing room */
+      padding-bottom: 32px;
+    }
+
+    /* Mode cards: 2 columns on tablet, don't force 1 column */
+    .mode-cards {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 640px;
+    }
+    .ms-footer-note { max-width: 640px; }
+
+    /* Cards grid: slightly larger min to avoid too many columns */
+    .cards-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+    /* Output panel: slightly taller on tablet */
+    .output-panel { max-height: 55vh; }
+
+    /* Section nav: fill width on tablet too */
+    .section-nav .btn-prev,
+    .section-nav .btn-next { flex: 1; justify-content: center; }
+    .section-nav { flex-wrap: wrap; gap: 8px; }
+
+    /* Fix: output-collapsed specificity – must override inside media query */
+    .app.output-collapsed {
+      grid-template-columns: 1fr;
+    }
+
+    /* Fix: output collapsed header shouldn't go full-height/column on mobile layout */
+    .output-panel.collapsed {
+      max-height: 54px;
+      overflow: hidden;
+    }
+    .output-panel.collapsed .output-header {
+      flex-direction: row;
+      padding: 14px 20px;
+      height: auto;
+      border-bottom: none;
+      cursor: pointer;
+    }
+    .output-panel.collapsed .output-collapsed-label {
+      writing-mode: initial;
+      text-orientation: initial;
+      transform: none;
+    }
+  }
+
+  /* ─── MOBILE (≤ 640 px) ──────────────────────────────────────── */
+  @media (max-width: 640px) {
+
+    /* Mode screen: top-anchored, scroll naturally */
+    .mode-screen {
+      justify-content: flex-start;
+      padding-top: 0;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .ms-content {
+      padding-top: 80px;
+      padding-bottom: 24px;
+    }
+
+    /* ms-topbar: less horizontal padding on small phones */
+    .ms-topbar { padding: 14px 16px; }
+
+    /* Mode cards: single column, full width */
+    .mode-cards { grid-template-columns: 1fr; max-width: 100%; }
+    .mode-title  { font-size: 20px; }
+    .mode-subtitle { font-size: 13px; margin-bottom: 28px; }
+    .ms-footer-note { max-width: 100%; margin-top: 24px; }
+
+    /* Fix: output-collapsed specificity */
+    .app.output-collapsed { grid-template-columns: 1fr; }
+
+    /* Fix: output collapsed panel – compact horizontal bar, not vertical column */
+    .output-panel.collapsed {
+      max-height: 54px;
+      overflow: hidden;
+    }
+    .output-panel.collapsed .output-header {
+      flex-direction: row;
+      padding: 14px 20px;
+      height: auto;
+      border-bottom: none;
+      cursor: pointer;
+    }
+    .output-panel.collapsed .output-collapsed-label {
+      writing-mode: initial;
+      text-orientation: initial;
+      transform: none;
+    }
+  }
+
+  /* ─── LANDSCAPE PHONES (short viewport ≤ 500 px height) ─────── */
+  @media (max-height: 500px) and (max-width: 900px) {
+    .mode-screen {
+      justify-content: flex-start;
+      padding-top: 0;
+    }
+    .ms-content {
+      padding-top: 70px;
+      padding-bottom: 20px;
+    }
+    /* Smaller cards to fit in one viewport */
+    .mode-card { padding: 16px 14px; }
+    .mode-card-icon { font-size: 20px; margin-bottom: 8px; }
+    .mode-card-name { font-size: 13px; }
+    .mode-card-desc { font-size: 11px; }
+    .mode-title    { font-size: 18px; margin-bottom: 6px; }
+    .mode-subtitle { margin-bottom: 20px; }
+  }
+
+  /* ─── VERY SMALL PHONES (≤ 380 px) ──────────────────────────── */
+  @media (max-width: 380px) {
+    .ms-topbar { padding: 12px 12px; }
+    .ms-logo-name { font-size: 12px; }
+    .ms-logo svg  { width: 22px; height: 22px; }
+    .ms-content   { padding-top: 72px; }
+
+    /* Header: hide logo sub-label to save space */
+    .logo-sub { display: none; }
+    .header { padding: 0 10px; }
+
+    /* Cards: single column on very small phones */
+    .cards-grid { grid-template-columns: 1fr !important; }
+    .cards-grid.cols-2 { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Ref path cards: already stacked at 480px */
+    .ref-path-card { padding: 14px 12px; }
+  }
+
 </style>
 </head>
 <body>
