@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Camera Patcher · PhotoPromptLab</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #060816; color: #fafafa; padding: 32px 24px; min-height: 100vh; }
+  h1 { font-size: 20px; font-weight: 700; color: #3ecf8e; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #6b7a9e; margin-bottom: 28px; line-height: 1.6; }
+  .step { background: #0E1325; border: 1px solid #1e2640; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+  .step-num { font-size: 11px; color: #3ecf8e; font-family: monospace; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .step h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .btn {
+    padding: 10px 20px; border-radius: 9999px; border: 1px solid rgba(62,207,142,0.4);
+    background: rgba(62,207,142,0.1); color: #3ecf8e; font-size: 13px;
+    cursor: pointer; transition: all 150ms; font-family: monospace;
+  }
+  .btn:hover { background: rgba(62,207,142,0.2); }
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, #7C4DFF, #3ecf8e);
+    border: none; color: #fff; font-size: 14px; font-weight: 600;
+    padding: 14px 32px; width: 100%; transition: opacity 200ms;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+  .status-line { font-size: 12px; font-family: monospace; margin-top: 8px; color: #6b7a9e; }
+  .status-line.ok { color: #3ecf8e; }
+  .status-line.err { color: #ff6b6b; }
+  .cameras { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 16px; }
+  .cam-slot { background: #060816; border: 1px solid #252d4a; border-radius: 8px; padding: 14px; }
+  .cam-name { font-size: 11px; color: #b4b4b4; font-family: monospace; margin-bottom: 8px; }
+  .drop-zone {
+    border: 2px dashed #252d4a; border-radius: 6px; padding: 20px 12px;
+    text-align: center; cursor: pointer; transition: all 200ms;
+    font-size: 11px; color: #6b7a9e; position: relative; min-height: 80px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: #3ecf8e; color: #3ecf8e; }
+  .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .drop-zone img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4px; display: none; }
+  .drop-zone.has-image { border-color: rgba(62,207,142,0.5); }
+  .drop-zone.has-image img { display: block; }
+  .tick { font-size: 10px; color: #3ecf8e; font-family: monospace; margin-top: 4px; }
+  .progress-bar { height: 3px; background: #1e2640; border-radius: 9999px; margin: 16px 0; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7C4DFF, #3ecf8e); width: 0%; transition: width 300ms; border-radius: 9999px; }
+  .log { font-size: 11px; font-family: monospace; color: #6b7a9e; margin-top: 12px; max-height: 80px; overflow-y: auto; }
+  .log .ok { color: #3ecf8e; }
+  .log .err { color: #ff6b6b; }
+</style>
+</head>
+<body>
+
+<h1>📷 Camera Patcher</h1>
+<p class="sub">Inserta las fotos reales de las cámaras en <code>index.html</code> automáticamente.<br>Todo ocurre en tu navegador — ningún dato sale de tu computadora.</p>
+
+<!-- STEP 1: Load index.html -->
+<div class="step">
+  <div class="step-num">Paso 1</div>
+  <h2>Carga el archivo <code>index.html</code></h2>
+  <button class="btn" id="btn-load-html" onclick="loadHTML()">📂 Seleccionar index.html</button>
+  <p class="status-line" id="html-status">Esperando archivo…</p>
+</div>
+
+<!-- STEP 2: Camera images -->
+<div class="step">
+  <div class="step-num">Paso 2</div>
+  <h2>Asigna cada imagen a su cámara</h2>
+  <div class="cameras" id="camera-slots"></div>
+</div>
+
+<!-- STEP 3: Generate + save -->
+<div class="step">
+  <div class="step-num">Paso 3</div>
+  <h2>Generar y guardar</h2>
+  <button class="btn-primary btn" id="btn-patch" onclick="patch()" disabled>
+    ⚡ Parchear y guardar index.html
+  </button>
+  <div class="progress-bar"><div class="progress-fill" id="pbar"></div></div>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+const CAMERAS = [
+  { id: 'canon5d4',        label: 'Canon EOS 5D Mark IV' },
+  { id: 'fujifilmgfx100s', label: 'Fujifilm GFX 100S' },
+  { id: 'sonya7r5',        label: 'Sony A7R V' },
+  { id: 'nikonz9',         label: 'Nikon Z9' },
+  { id: 'leicam11',        label: 'Leica M11' }
+];
+
+let htmlContent = null;
+let htmlFileHandle = null;
+const b64 = {};
+
+// Build slots
+const slotsEl = document.getElementById('camera-slots');
+CAMERAS.forEach(cam => {
+  const slot = document.createElement('div');
+  slot.className = 'cam-slot';
+  slot.innerHTML = `
+    <div class="cam-name">${cam.label}</div>
+    <div class="drop-zone" id="zone-${cam.id}">
+      <img id="preview-${cam.id}" alt="">
+      <input type="file" accept="image/*" onchange="loadImg(event,'${cam.id}')">
+      <div id="dz-label-${cam.id}">📷 clic o arrastra</div>
+      <div class="tick" id="tick-${cam.id}"></div>
+    </div>
+  `;
+  slotsEl.appendChild(slot);
+  const zone = slot.querySelector('.drop-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) readImg(f, cam.id);
+  });
+});
+
+function loadImg(e, id) { const f = e.target.files[0]; if (f) readImg(f, id); }
+
+function readImg(file, id) {
+  const r = new FileReader();
+  r.onload = ev => {
+    b64[id] = ev.target.result;
+    const preview = document.getElementById('preview-' + id);
+    preview.src = b64[id];
+    document.getElementById('zone-' + id).classList.add('has-image');
+    document.getElementById('dz-label-' + id).style.display = 'none';
+    document.getElementById('tick-' + id).textContent = '✓ ' + Math.round(b64[id].length / 1024) + 'KB';
+    checkReady();
+  };
+  r.readAsDataURL(file);
+}
+
+async function loadHTML() {
+  try {
+    if (window.showOpenFilePicker) {
+      // Modern File System Access API
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }]
+      });
+      htmlFileHandle = handle;
+      const file = await handle.getFile();
+      htmlContent = await file.text();
+    } else {
+      // Fallback: input element
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = '.html';
+      input.onchange = async e => {
+        const file = e.target.files[0];
+        htmlContent = await file.text();
+        setHTMLStatus(file.name, htmlContent.length);
+      };
+      input.click();
+      return;
+    }
+    setHTMLStatus((await htmlFileHandle.getFile()).name, htmlContent.length);
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      document.getElementById('html-status').textContent = '✗ Error: ' + e.message;
+      document.getElementById('html-status').className = 'status-line err';
+    }
+  }
+}
+
+function setHTMLStatus(name, len) {
+  document.getElementById('html-status').textContent = '✓ ' + name + ' (' + Math.round(len/1024) + ' KB cargado)';
+  document.getElementById('html-status').className = 'status-line ok';
+  checkReady();
+}
+
+function checkReady() {
+  const allImgs = CAMERAS.every(c => b64[c.id]);
+  const hasHtml = !!htmlContent;
+  document.getElementById('btn-patch').disabled = !(allImgs && hasHtml);
+}
+
+function log(msg, type='') {
+  const div = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = type;
+  line.textContent = msg;
+  div.appendChild(line);
+  div.scrollTop = div.scrollHeight;
+}
+
+function setProgress(pct) {
+  document.getElementById('pbar').style.width = pct + '%';
+}
+
+async function patch() {
+  document.getElementById('btn-patch').disabled = true;
+  document.getElementById('log').innerHTML = '';
+  setProgress(5);
+  log('Iniciando patch…');
+
+  let html = htmlContent;
+  let replaced = 0;
+
+  // For each camera, replace the assignment line with the real base64
+  // Pattern: CAMERA_SVG['<id>'] = ...anything...; (single line)
+  for (let i = 0; i < CAMERAS.length; i++) {
+    const cam = CAMERAS[i];
+    const dataUri = b64[cam.id];
+    // Escape the id for regex
+    const escapedId = cam.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(
+      `CAMERA_SVG\\['${escapedId}'\\]\\s*=\\s*[^;]+;`,
+      'g'
+    );
+    const replacement = `CAMERA_SVG['${cam.id}'] = '${dataUri}';`;
+    const newHtml = html.replace(pattern, replacement);
+    if (newHtml !== html) {
+      replaced++;
+      log(`✓ ${cam.label} — ${Math.round(dataUri.length/1024)}KB embedded`, 'ok');
+    } else {
+      log(`⚠ ${cam.label} — no se encontró la línea CAMERA_SVG['${cam.id}']`, 'err');
+    }
+    html = newHtml;
+    setProgress(5 + Math.round((i+1) / CAMERAS.length * 75));
+    await new Promise(r => setTimeout(r, 30)); // yield to paint
+  }
+
+  log(`Reemplazados: ${replaced} / ${CAMERAS.length}`);
+  setProgress(85);
+
+  // Save
+  try {
+    if (htmlFileHandle && window.showSaveFilePicker) {
+      // Overwrite in place
+      const writable = await htmlFileHandle.createWritable();
+      await writable.write(html);
+      await writable.close();
+      log('✓ index.html guardado (sobrescrito en su ubicación original)', 'ok');
+    } else {
+      // Fallback: download
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(url);
+      log('✓ index.html descargado — reemplaza el original con este archivo', 'ok');
+    }
+    setProgress(100);
+    log('🎉 ¡Listo! Abre index.html en el navegador para verificar las imágenes.', 'ok');
+  } catch(e) {
+    if (e.name === 'AbortError') {
+      log('Guardado cancelado.', 'err');
+    } else {
+      log('Error al guardar: ' + e.message, 'err');
+    }
+  }
+
+  document.getElementById('btn-patch').disabled = false;
+}
+</script>
+</body>
+</html>
